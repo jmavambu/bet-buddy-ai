@@ -1,10 +1,11 @@
+
 import { useState } from "react";
 import { Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sport } from "@/types";
 
 // Custom Basketball icon since it's not available in lucide-react
-const Basketball = (props: any) => (
+const Basketball = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="24"
@@ -27,7 +28,7 @@ const Basketball = (props: any) => (
 );
 
 // Custom Football icon since it's not available in lucide-react
-const Football = (props: any) => (
+const Football = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="24"

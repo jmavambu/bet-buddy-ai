@@ -50,7 +50,7 @@ const PredictionDisplay = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-sport-darkBlue border-sport-darkGray/50 text-white max-w-2xl max-h-[90vh]">
+      <DialogContent className="bg-sport-darkBlue border-sport-darkGray/50 text-white max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-2xl flex items-center">
             <span className="text-sport-gold font-bold mr-2">AI</span> Predictions for {player.name}
@@ -60,8 +60,8 @@ const PredictionDisplay = ({
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="h-[calc(90vh-180px)] pr-4">
-          <div className="space-y-6 mt-4">
+        <ScrollArea className="flex-1 pr-4 mt-4 max-h-[calc(90vh-200px)]">
+          <div className="space-y-6">
             {predictions.map((prediction) => (
               <div 
                 key={`${prediction.playerId}-${prediction.statCategory}`}
@@ -176,18 +176,18 @@ const PredictionDisplay = ({
                 )}
               </div>
             ))}
-
-            <div className="flex justify-between items-center mt-6 pb-4">
-              <Button variant="outline" className="border-sport-darkGray text-gray-300" onClick={onClose}>
-                Close
-              </Button>
-              <Button className="bg-sport-green hover:bg-sport-green/90">
-                Save Picks
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
           </div>
         </ScrollArea>
+
+        <div className="flex justify-between items-center mt-6 pt-4 border-t border-sport-darkGray/30">
+          <Button variant="outline" className="border-sport-darkGray text-gray-300" onClick={onClose}>
+            Close
+          </Button>
+          <Button className="bg-sport-green hover:bg-sport-green/90">
+            Save Picks
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
