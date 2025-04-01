@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { Basketball as BasketballIcon, Football as FootballIcon, Trophy } from "lucide-react";
+import { Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sport } from "@/types";
 
