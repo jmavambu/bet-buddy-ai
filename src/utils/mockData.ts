@@ -1,5 +1,4 @@
-
-import { Game, Player, Prediction, Sport } from "@/types";
+import { Game, Player, PlayerGameHistory, Prediction, Sport } from "@/types";
 
 // NBA Players
 export const nbaMockPlayers: Player[] = [
@@ -245,6 +244,82 @@ export const allMockPlayers: Player[] = [
   ...soccerMockPlayers,
 ];
 
+// Player Game History
+export const playerGameHistory: PlayerGameHistory[] = [
+  {
+    id: "history-1",
+    playerId: "nba-1",
+    gameId: "game-1",
+    opponent: "Golden State Warriors",
+    date: "2023-09-05",
+    stats: {
+      ppg: 27.4,
+      rpg: 8.2,
+      apg: 9.1,
+    },
+  },
+  {
+    id: "history-2",
+    playerId: "nba-1",
+    gameId: "game-2",
+    opponent: "Golden State Warriors",
+    date: "2023-08-12",
+    stats: {
+      ppg: 24.6,
+      rpg: 7.5,
+      apg: 7.8,
+    },
+  },
+  {
+    id: "history-3",
+    playerId: "nba-1",
+    gameId: "game-3",
+    opponent: "Golden State Warriors",
+    date: "2023-07-22",
+    stats: {
+      ppg: 29.2,
+      rpg: 6.9,
+      apg: 10.3,
+    },
+  },
+  {
+    id: "history-4",
+    playerId: "nba-2",
+    gameId: "game-4",
+    opponent: "Los Angeles Lakers",
+    date: "2023-09-02",
+    stats: {
+      ppg: 32.1,
+      rpg: 5.8,
+      apg: 5.9,
+    },
+  },
+  {
+    id: "history-5",
+    playerId: "nfl-1",
+    gameId: "game-5",
+    opponent: "Buffalo Bills",
+    date: "2023-09-10",
+    stats: {
+      passing_yards: 342.5,
+      passing_tds: 3.0,
+      interceptions: 0.0,
+    },
+  },
+  {
+    id: "history-6",
+    playerId: "soccer-1",
+    gameId: "game-6",
+    opponent: "Orlando City",
+    date: "2023-09-08",
+    stats: {
+      goals: 1.0,
+      assists: 1.0,
+      shots: 5.0,
+    },
+  },
+];
+
 // Mock Games
 export const mockGames: Game[] = [
   {
@@ -285,11 +360,50 @@ export const mockGames: Game[] = [
   },
 ];
 
+// Helper function to get player history
+export const getPlayerHistoryVsTeam = (playerId: string, opponent: string): PlayerGameHistory[] => {
+  return playerGameHistory.filter(
+    (history) => history.playerId === playerId && history.opponent === opponent
+  );
+};
+
+// Helper function to get predictions for a player
+export const getPlayerPredictions = (playerId: string): Prediction[] => {
+  return mockPredictions.filter(prediction => prediction.playerId === playerId);
+};
+
+// Helper function to get players by sport
+export const getPlayersBySport = (sport: Sport): Player[] => {
+  return allMockPlayers.filter(player => player.sport === sport);
+};
+
+// Helper function to get games by sport
+export const getGamesBySport = (sport: Sport): Game[] => {
+  return mockGames.filter(game => game.sport === sport);
+};
+
+// Helper function to get upcoming opponent for a player
+export const getUpcomingOpponent = (playerId: string): string | null => {
+  const player = allMockPlayers.find(p => p.id === playerId);
+  if (!player) return null;
+  
+  const upcomingGame = mockGames.find(game => 
+    game.sport === player.sport && 
+    (game.homeTeam === player.team || game.awayTeam === player.team)
+  );
+  
+  if (!upcomingGame) return null;
+  
+  return upcomingGame.homeTeam === player.team 
+    ? upcomingGame.awayTeam 
+    : upcomingGame.homeTeam;
+};
+
 // Mock Predictions
 export const mockPredictions: Prediction[] = [
   {
     playerId: "nba-1",
-    statCategory: "points",
+    statCategory: "ppg",
     predictedValue: 28.5,
     confidence: 85,
     recommendation: "over",
@@ -297,8 +411,8 @@ export const mockPredictions: Prediction[] = [
   },
   {
     playerId: "nba-2",
-    statCategory: "three_pointers",
-    predictedValue: 5.5,
+    statCategory: "ppg",
+    predictedValue: 31.5,
     confidence: 78,
     recommendation: "over",
     odds: 1.92,
@@ -321,21 +435,6 @@ export const mockPredictions: Prediction[] = [
   },
 ];
 
-// Helper function to get predictions for a player
-export const getPlayerPredictions = (playerId: string): Prediction[] => {
-  return mockPredictions.filter(prediction => prediction.playerId === playerId);
-};
-
-// Helper function to get players by sport
-export const getPlayersBySport = (sport: Sport): Player[] => {
-  return allMockPlayers.filter(player => player.sport === sport);
-};
-
-// Helper function to get games by sport
-export const getGamesBySport = (sport: Sport): Game[] => {
-  return mockGames.filter(game => game.sport === sport);
-};
-
 // Helper function to simulate AI generating a prediction
 export const generateAIPrediction = (player: Player, statCategory: string): Prediction => {
   const statValue = player.stats[statCategory] || 0;
@@ -343,13 +442,30 @@ export const generateAIPrediction = (player: Player, statCategory: string): Pred
   const predictedValue = statValue * (1 + variance);
   const confidence = Math.floor(70 + Math.random() * 30); // 70-99
   
+  const upcomingOpponent = getUpcomingOpponent(player.id);
+  
+  const pastPerformances = upcomingOpponent 
+    ? getPlayerHistoryVsTeam(player.id, upcomingOpponent)
+    : [];
+  
+  let adjustedPrediction = predictedValue;
+  if (pastPerformances.length > 0) {
+    const avgPastPerformance = pastPerformances.reduce((sum, game) => {
+      return sum + (game.stats[statCategory] || 0);
+    }, 0) / pastPerformances.length;
+    
+    adjustedPrediction = (predictedValue * 0.7) + (avgPastPerformance * 0.3);
+  }
+  
   return {
     playerId: player.id,
     statCategory,
-    predictedValue: Number(predictedValue.toFixed(1)),
+    predictedValue: Number(adjustedPrediction.toFixed(1)),
     confidence,
     recommendation: confidence > 80 ? "over" : confidence < 75 ? "under" : "neutral",
     odds: Number((1.5 + Math.random() * 1).toFixed(2)),
+    vsTeam: upcomingOpponent,
+    pastPerformances: pastPerformances.length > 0 ? pastPerformances : undefined,
   };
 };
 
@@ -357,11 +473,11 @@ export const generateAIPrediction = (player: Player, statCategory: string): Pred
 export const getStatCategoriesBySport = (sport: Sport): string[] => {
   switch (sport) {
     case "nba":
-      return ["points", "rebounds", "assists", "three_pointers", "blocks", "steals"];
+      return ["ppg", "rpg", "apg", "fg_pct", "ft_pct"];
     case "nfl":
-      return ["passing_yards", "rushing_yards", "receiving_yards", "touchdowns", "receptions"];
+      return ["passing_yards", "passing_tds", "interceptions", "completion_pct", "qb_rating"];
     case "soccer":
-      return ["goals", "assists", "shots", "passes", "tackles"];
+      return ["goals", "assists", "shots", "key_passes", "dribbles"];
     default:
       return [];
   }
@@ -370,22 +486,28 @@ export const getStatCategoriesBySport = (sport: Sport): string[] => {
 // Get a display name for stat categories
 export const getStatDisplayName = (statCategory: string): string => {
   const displayNames: Record<string, string> = {
-    points: "Points",
-    rebounds: "Rebounds",
-    assists: "Assists",
-    three_pointers: "3-Pointers",
-    blocks: "Blocks",
-    steals: "Steals",
+    ppg: "Points",
+    rpg: "Rebounds",
+    apg: "Assists",
+    fg_pct: "FG%",
+    ft_pct: "FT%",
+    
     passing_yards: "Passing Yards",
+    passing_tds: "Passing TDs",
+    interceptions: "Interceptions",
+    completion_pct: "Completion %",
+    qb_rating: "QB Rating",
     rushing_yards: "Rushing Yards",
-    receiving_yards: "Receiving Yards",
-    touchdowns: "Touchdowns",
+    rushing_tds: "Rushing TDs",
     receptions: "Receptions",
+    receiving_yards: "Receiving Yards",
+    total_yards: "Total Yards",
+    
     goals: "Goals",
     assists: "Assists",
     shots: "Shots",
-    passes: "Passes",
-    tackles: "Tackles",
+    key_passes: "Key Passes",
+    dribbles: "Dribbles",
   };
   
   return displayNames[statCategory] || statCategory;

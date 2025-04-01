@@ -13,6 +13,17 @@ export interface Player {
   };
 }
 
+export interface PlayerGameHistory {
+  id: string;
+  playerId: string; 
+  gameId: string;
+  opponent: string;
+  date: string;
+  stats: {
+    [key: string]: number;
+  };
+}
+
 export interface Prediction {
   playerId: string;
   statCategory: string;
@@ -20,6 +31,8 @@ export interface Prediction {
   confidence: number; // 0-100
   recommendation: 'over' | 'under' | 'neutral';
   odds: number;
+  vsTeam?: string;
+  pastPerformances?: PlayerGameHistory[];
 }
 
 export interface Game {
@@ -31,3 +44,4 @@ export interface Game {
   location: string;
   sport: Sport;
 }
+

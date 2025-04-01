@@ -10,8 +10,8 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, BarChart } from "lucide-react";
-import { generateAIPrediction, getStatDisplayName } from "@/utils/mockData";
+import { TrendingUp, BarChart } from "lucide-react";
+import { generateAIPrediction, getStatDisplayName, getUpcomingOpponent } from "@/utils/mockData";
 import { useState } from "react";
 
 interface PlayerCardProps {
@@ -40,6 +40,9 @@ const PlayerCard = ({ player, onShowPredictions }: PlayerCardProps) => {
     }, 1500);
   };
 
+  // Get upcoming opponent
+  const upcomingOpponent = getUpcomingOpponent(player.id);
+
   return (
     <Card className="overflow-hidden border-sport-darkGray/60 bg-sport-darkBlue/60 backdrop-blur-sm hover:shadow-md hover:shadow-sport-gold/10 transition-all duration-300">
       <CardHeader className="pb-2">
@@ -49,6 +52,12 @@ const PlayerCard = ({ player, onShowPredictions }: PlayerCardProps) => {
             <CardDescription className="text-gray-400">
               {player.team} • {player.position}
             </CardDescription>
+            {upcomingOpponent && (
+              <CardDescription className="text-xs mt-1">
+                <span className="text-sport-gold">Next: </span>
+                <span className="text-gray-400">vs {upcomingOpponent}</span>
+              </CardDescription>
+            )}
           </div>
           <Badge 
             variant="outline" 

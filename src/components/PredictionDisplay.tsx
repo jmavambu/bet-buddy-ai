@@ -6,12 +6,21 @@ import {
   DialogHeader, 
   DialogTitle 
 } from "@/components/ui/dialog";
-import { Player, Prediction } from "@/types";
+import { Player, Prediction, PlayerGameHistory } from "@/types";
 import { getStatDisplayName } from "@/utils/mockData";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, Minus, ArrowRight } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, ArrowRight, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
 
 interface PredictionDisplayProps {
   player: Player | null;
@@ -26,7 +35,17 @@ const PredictionDisplay = ({
   isOpen,
   onClose,
 }: PredictionDisplayProps) => {
+  const [selectedPrediction, setSelectedPrediction] = useState<string | null>(null);
+  
   if (!player) return null;
+
+  const toggleHistory = (statCategory: string) => {
+    if (selectedPrediction === statCategory) {
+      setSelectedPrediction(null);
+    } else {
+      setSelectedPrediction(statCategory);
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -74,6 +93,13 @@ const PredictionDisplay = ({
                 <span className="text-white font-bold">{prediction.predictedValue}</span>
               </div>
 
+              {prediction.vsTeam && (
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-gray-400">Vs Team:</span>
+                  <span className="text-white">{prediction.vsTeam}</span>
+                </div>
+              )}
+
               <div className="flex items-center justify-between mb-1">
                 <span className="text-gray-400">Line:</span>
                 <span className="text-white">{Math.floor(prediction.predictedValue)}.5</span>
@@ -86,15 +112,13 @@ const PredictionDisplay = ({
 
               <Progress 
                 value={prediction.confidence} 
-                className="h-2 bg-sport-darkGray"
-                indicatorClassName={`
-                  ${prediction.confidence > 80 
+                className={`h-2 bg-sport-darkGray ${
+                  prediction.confidence > 80 
                     ? "bg-green-500" 
                     : prediction.confidence > 65 
                       ? "bg-amber-500" 
                       : "bg-red-500"
-                  }
-                `}
+                }`}
               />
 
               <div className="mt-4">
@@ -109,6 +133,45 @@ const PredictionDisplay = ({
                   <span className="text-white">{prediction.odds}</span>
                 </div>
               </div>
+
+              {prediction.pastPerformances && prediction.pastPerformances.length > 0 && (
+                <div className="mt-4">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full text-sport-gold border-sport-gold/30"
+                    onClick={() => toggleHistory(prediction.statCategory)}
+                  >
+                    <History className="h-4 w-4 mr-2" />
+                    {selectedPrediction === prediction.statCategory ? 'Hide History' : 'Show Past Performances'}
+                  </Button>
+                  
+                  {selectedPrediction === prediction.statCategory && (
+                    <div className="mt-3 bg-sport-darkGray/20 rounded-md p-2">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="border-b border-sport-darkGray/40">
+                            <TableHead className="text-sport-gold">Date</TableHead>
+                            <TableHead className="text-sport-gold">Opponent</TableHead>
+                            <TableHead className="text-sport-gold text-right">{getStatDisplayName(prediction.statCategory)}</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {prediction.pastPerformances.map((game) => (
+                            <TableRow key={game.id} className="border-b border-sport-darkGray/30">
+                              <TableCell className="text-gray-300">{new Date(game.date).toLocaleDateString()}</TableCell>
+                              <TableCell className="text-gray-300">vs {game.opponent}</TableCell>
+                              <TableCell className="text-right font-medium text-white">
+                                {game.stats[prediction.statCategory]?.toFixed(1) || 'N/A'}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           ))}
 
