@@ -1,8 +1,55 @@
 
 import { useState } from "react";
-import { Basketball, Football, Trophy } from "lucide-react";
+import { Basketball as BasketballIcon, Football as FootballIcon, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sport } from "@/types";
+
+// Custom Basketball icon since it's not available in lucide-react
+const Basketball = (props: any) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    <circle cx="12" cy="12" r="10" />
+    <path d="M4.93 4.93 19.07 19.07" />
+    <path d="M12 2a10 10 0 0 0-8.48 4.69" />
+    <path d="M12 2v20" />
+    <path d="M2 12h20" />
+    <path d="M12 22a10 10 0 0 0 8.48-4.69" />
+  </svg>
+);
+
+// Custom Football icon since it's not available in lucide-react
+const Football = (props: any) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    <circle cx="12" cy="12" r="10" />
+    <path d="m7.48 7.48 9.04 9.04" />
+    <path d="m7.48 16.52 9.04-9.04" />
+    <path d="M3 12h3" />
+    <path d="M12 3v3" />
+    <path d="M18 12h3" />
+    <path d="M12 18v3" />
+  </svg>
+);
 
 interface SportSelectorProps {
   onSelectSport: (sport: Sport) => void;
